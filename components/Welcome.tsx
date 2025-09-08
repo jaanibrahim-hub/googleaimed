@@ -1,0 +1,47 @@
+import React from 'react';
+
+const Welcome: React.FC = () => {
+    return (
+        <div className="flex justify-center items-center h-full p-4">
+            <div className="bg-white rounded-2xl p-8 sm:p-12 max-w-2xl text-center shadow-xl border-2 border-[#E1F0F5]">
+                <div className="text-6xl mb-6">🏥</div>
+                <h2 className="text-3xl font-bold text-[#1A2B42] mb-4">Welcome to MediTeach AI</h2>
+                <p className="text-gray-600 mb-8 text-lg">
+                    I'm here to help you understand your medical information with compassion and clarity.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+                    <div className="flex items-start gap-4 p-4 bg-[#F8FBFF] rounded-lg border border-[#E1F0F5]">
+                        <i className="fas fa-comments text-[#7FB069] text-xl mt-1"></i>
+                        <div>
+                            <h3 className="font-semibold">Ask Questions</h3>
+                            <p className="text-sm text-gray-500">About your medical conditions and treatments.</p>
+                        </div>
+                    </div>
+                    <div className="flex items-start gap-4 p-4 bg-[#F8FBFF] rounded-lg border border-[#E1F0F5]">
+                        <i className="fas fa-upload text-[#7FB069] text-xl mt-1"></i>
+                         <div>
+                            <h3 className="font-semibold">Upload Documents</h3>
+                            <p className="text-sm text-gray-500">For personalized visual explanations.</p>
+                        </div>
+                    </div>
+                    <div className="flex items-start gap-4 p-4 bg-[#F8FBFF] rounded-lg border border-[#E1F0F5]">
+                        <i className="fas fa-eye text-[#7FB069] text-xl mt-1"></i>
+                         <div>
+                            <h3 className="font-semibold">Get Visuals</h3>
+                            <p className="text-sm text-gray-500">That make complex topics easy to understand.</p>
+                        </div>
+                    </div>
+                     <div className="flex items-start gap-4 p-4 bg-[#F8FBFF] rounded-lg border border-[#E1F0F5]">
+                        <i className="fas fa-heart text-[#7FB069] text-xl mt-1"></i>
+                         <div>
+                            <h3 className="font-semibold">Receive Support</h3>
+                            <p className="text-sm text-gray-500">Throughout your entire medical journey.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Welcome;
