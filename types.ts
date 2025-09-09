@@ -58,4 +58,30 @@ export interface UserPreferences {
   visualPreference: boolean;
   language: string;
   autoSave: boolean;
+  hasCompletedOnboarding: boolean;
+}
+
+export interface OnboardingStep {
+  id: string;
+  title: string;
+  description: string;
+  content: React.ReactNode | string;
+  targetElement?: string;
+  placement?: 'top' | 'bottom' | 'left' | 'right' | 'center';
+  action?: {
+    type: 'click' | 'input' | 'demo' | 'highlight';
+    element?: string;
+    demoAction?: () => void;
+    inputPlaceholder?: string;
+  };
+  canSkip?: boolean;
+  isDemo?: boolean;
+}
+
+export interface OnboardingFlow {
+  id: string;
+  title: string;
+  description: string;
+  steps: OnboardingStep[];
+  estimatedTime: number; // in minutes
 }

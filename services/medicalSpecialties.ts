@@ -281,7 +281,8 @@ export class UserPreferencesService {
           responseComplexity: preferences.responseComplexity || 'intermediate',
           visualPreference: preferences.visualPreference !== false, // Default true
           language: preferences.language || 'en',
-          autoSave: preferences.autoSave !== false // Default true
+          autoSave: preferences.autoSave !== false, // Default true
+          hasCompletedOnboarding: preferences.hasCompletedOnboarding || false
         };
       }
     } catch (error) {
@@ -294,7 +295,8 @@ export class UserPreferencesService {
       responseComplexity: 'intermediate',
       visualPreference: true,
       language: 'en',
-      autoSave: true
+      autoSave: true,
+      hasCompletedOnboarding: false
     };
   }
 

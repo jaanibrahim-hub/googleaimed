@@ -1,6 +1,7 @@
 import React from 'react';
 import { useConversationHistory } from '../hooks/useConversationHistory';
 import { useMedicalSpecialty } from '../hooks/useMedicalSpecialty';
+import OnboardingTrigger from './OnboardingTrigger';
 
 interface WelcomeProps {
   onShowHistory?: () => void;
@@ -46,6 +47,23 @@ const Welcome: React.FC<WelcomeProps> = ({ onShowHistory, onShowSpecialtySelecto
                             <h3 className="font-semibold">Receive Support</h3>
                             <p className="text-sm text-gray-500">Throughout your entire medical journey.</p>
                         </div>
+                    </div>
+                </div>
+
+                {/* Interactive Tutorial CTA */}
+                <div className="mt-8 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl">
+                    <div className="flex items-center justify-between">
+                        <div className="text-left">
+                            <h4 className="font-semibold text-indigo-900 mb-1">
+                                New to MediTeach AI?
+                            </h4>
+                            <p className="text-sm text-indigo-700">
+                                Take our interactive 3-minute tutorial to learn all the powerful features.
+                            </p>
+                        </div>
+                        <OnboardingTrigger className="bg-indigo-600 hover:bg-indigo-700">
+                            <span>Start Tutorial</span>
+                        </OnboardingTrigger>
                     </div>
                 </div>
                 

@@ -12,6 +12,9 @@ import { generateMedicalExplanation, initializeAi } from '../services/geminiServ
 import MedicalLoadingSpinner from './MedicalLoadingSpinner';
 import { useConversationHistory } from '../hooks/useConversationHistory';
 import { useMedicalSpecialty } from '../hooks/useMedicalSpecialty';
+import { useOnboarding } from '../hooks/useOnboarding';
+import OnboardingModal from './OnboardingModal';
+import FirstTimeUserWelcome from './FirstTimeUserWelcome';
 
 interface ChatInterfaceProps {
     apiKey: string;
@@ -117,6 +120,17 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
         generateSpecialtyPrompt
     } = useMedicalSpecialty();
 
+    // Onboarding management
+    const {
+        isOnboardingOpen,
+        currentFlow,
+        shouldShowOnboarding,
+        startOnboarding,
+        closeOnboarding,
+        completeOnboarding,
+        checkAndStartOnboarding
+    } = useOnboarding();
+
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -124,6 +138,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
         initializeAi(apiKey);
       }
     }, [apiKey]);
+
+    // Check and start onboarding for new users
+    useEffect(() => {
+        checkAndStartOnboarding();
+    }, [checkAndStartOnboarding]);
 
     // Load conversation when currentConversation changes
     useEffect(() => {
@@ -367,6 +386,19 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
     // Get current quick actions based on specialty
     const currentQuickActions = getQuickActions();
 
+    // Onboarding demo handlers
+    const handleOnboardingSpecialtyDemo = () => {
+        setShowSpecialtySelector(true);
+    };
+
+    const handleOnboardingInputDemo = (text: string) => {
+        setUserInput(text);
+        // Auto-send the demo message after a brief delay
+        setTimeout(() => {
+            handleSendMessage(text);
+        }, 500);
+    };
+
     return (
         <div className="flex flex-col h-full bg-[#F8FBFF]">
             <Header 
@@ -409,7 +441,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
                 
                  <div className="flex items-center gap-3 bg-[#F8FBFF] border-2 border-[#E1F0F5] rounded-full p-2 focus-within:border-[#2E7D95] focus-within:ring-2 focus-[#2E7D95]/50 transition-all duration-300">
                     <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*,application/pdf" className="hidden" multiple />
-                    <button onClick={onMobileUploadClick} className="p-2 text-gray-500 hover:text-[#2E7D95] rounded-full transition-colors">
+                    <button 
+                        onClick={onMobileUploadClick} 
+                        className="p-2 text-gray-500 hover:text-[#2E7D95] rounded-full transition-colors"
+                        data-onboarding-id="file-upload-button"
+                    >
                         <i className="fas fa-paperclip text-lg"></i>
                     </button>
                     <input
@@ -420,6 +456,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
                         placeholder="Ask about your medical condition, upload documents..."
                         className="flex-1 bg-transparent focus:outline-none text-base"
                         disabled={isLoading}
+                        data-onboarding-id="chat-input"
                     />
                     <button
                         onClick={() => handleSendMessage()}
@@ -434,7 +471,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
                         <i className="fas fa-shield-alt text-[#7FB069]"></i>
                         <span>For educational purposes. Always consult your healthcare provider.</span>
                     </div>
-                    <div className="flex gap-2 flex-wrap">
+                    <div className="flex gap-2 flex-wrap" data-onboarding-id="quick-actions">
                         {/* Dynamic quick actions based on selected specialty */}
                         {currentQuickActions.map((action, index) => (
                           <button 
@@ -480,6 +517,18 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
                 isOpen={showSpecialtySelector}
                 onClose={() => setShowSpecialtySelector(false)}
                 onSpecialtyChange={handleSpecialtyChange}
+            />
+            
+            {/* Onboarding Components */}
+            <FirstTimeUserWelcome />
+            
+            <OnboardingModal
+                isOpen={isOnboardingOpen}
+                onClose={closeOnboarding}
+                onComplete={completeOnboarding}
+                flow={currentFlow}
+                onSpecialtySelectorDemo={handleOnboardingSpecialtyDemo}
+                onInputDemo={handleOnboardingInputDemo}
             />
         </div>
     );

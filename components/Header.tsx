@@ -36,6 +36,7 @@ const Header: React.FC<HeaderProps> = ({
                   onClick={onShowHistory}
                   className="bg-white/20 hover:bg-white/30 text-white font-semibold px-3 sm:px-4 py-2 rounded-lg transition-colors flex items-center gap-2 relative"
                   title="View conversation history"
+                  data-onboarding-id="history-button"
               >
                   <i className="fas fa-history"></i>
                   <span className="hidden md:inline">History</span>
