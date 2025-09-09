@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import DocumentUploadButton from './DocumentUploadButton';
 
 interface SimpleChatInputProps {
   apiKey: string;
+  specialty?: any;
+  onMessageSent?: (userMsg: {sender: 'user', content: string}, aiMsg: {sender: 'ai', content: string}) => void;
 }
 
 // Function to add messages to the chat UI
@@ -44,14 +47,40 @@ const addMessageToChat = (sender: 'user' | 'ai', message: string) => {
   }
 };
 
-const SimpleChatInput: React.FC<SimpleChatInputProps> = ({ apiKey }) => {
+const SimpleChatInput: React.FC<SimpleChatInputProps> = ({ apiKey, specialty, onMessageSent }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  const handleDocumentAnalysis = (analysis: string) => {
+    addMessageToChat('ai', analysis);
+  };
+
+  // Listen for voice input and quick questions
+  React.useEffect(() => {
+    const handleVoiceInput = (event: any) => {
+      setInput(event.detail);
+      setTimeout(() => handleSend(event.detail), 500);
+    };
     
-    const userMessage = input.trim();
+    const handleQuickQuestion = (event: any) => {
+      setInput(event.detail);
+      setTimeout(() => handleSend(event.detail), 500);
+    };
+
+    document.addEventListener('voiceInput', handleVoiceInput);
+    window.addEventListener('quickQuestion', handleQuickQuestion);
+    
+    return () => {
+      document.removeEventListener('voiceInput', handleVoiceInput);
+      window.removeEventListener('quickQuestion', handleQuickQuestion);
+    };
+  }, []);
+
+  const handleSend = async (messageText?: string) => {
+    const textToSend = messageText || input;
+    if (!textToSend.trim() || isLoading) return;
+    
+    const userMessage = textToSend.trim();
     setInput('');
     setIsLoading(true);
 
@@ -91,6 +120,9 @@ Please provide a clear, compassionate response that educates but doesn't replace
       addMessageToChat('user', userMessage);
       addMessageToChat('ai', aiResponse);
       
+      // Notify parent component
+      onMessageSent?.({sender: 'user', content: userMessage}, {sender: 'ai', content: aiResponse});
+      
     } catch (error) {
       console.error('Error:', error);
       addMessageToChat('user', userMessage);
@@ -109,9 +141,10 @@ Please provide a clear, compassionate response that educates but doesn't replace
 
   return (
     <div className="flex items-center gap-3 bg-gray-50 border-2 border-gray-200 rounded-full p-2 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200">
-      <button className="p-2 text-gray-500 hover:text-blue-500 rounded-full transition-colors">
-        📎
-      </button>
+      <DocumentUploadButton 
+        onDocumentAnalyzed={handleDocumentAnalysis}
+        apiKey={apiKey}
+      />
       <input
         type="text"
         value={input}

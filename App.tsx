@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import LandingPage from './components/LandingPage';
 import ChatView from './views/ChatView';
 import SimpleChatInput from './components/SimpleChatInput';
+import ConversationHistoryPanel, { conversationUtils } from './components/ConversationHistoryPanel';
+import MedicalSpecialtySelector from './components/MedicalSpecialtySelector';
+import VoiceChat from './components/VoiceChat';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import OfflineStatus from './components/OfflineStatus';
 import PWAUpdateNotification from './components/PWAUpdateNotification';
@@ -12,6 +15,10 @@ import UserPreferencesService from './services/userPreferencesService';
 
 const App: React.FC = () => {
   const [apiKey, setApiKey] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
+  const [selectedSpecialty, setSelectedSpecialty] = useState(null);
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [currentMessages, setCurrentMessages] = useState<Array<{sender: 'user' | 'ai', content: string}>>([]);
   const { isInstalled, hasUpdate, update, checkForUpdates } = usePWA();
   const { theme, isDarkMode } = useTheme();
   
@@ -119,6 +126,46 @@ const App: React.FC = () => {
               </div>
             </div>
             
+            {/* Medical Specialty Selector */}
+            <div className="mb-4">
+              <MedicalSpecialtySelector 
+                currentSpecialty={selectedSpecialty}
+                onSpecialtySelected={setSelectedSpecialty}
+              />
+            </div>
+
+            {/* Quick Actions */}
+            <div className="mb-6 space-y-2">
+              <button
+                onClick={() => setShowHistory(true)}
+                className="w-full bg-blue-100 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-2"
+              >
+                <span>📚</span>
+                Conversation History
+              </button>
+              
+              <button
+                onClick={() => setVoiceEnabled(!voiceEnabled)}
+                className={`w-full px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                  voiceEnabled 
+                    ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <span>{voiceEnabled ? '🎤' : '🔇'}</span>
+                {voiceEnabled ? 'Voice: ON' : 'Voice: OFF'}
+              </button>
+              
+              <button
+                onClick={() => conversationUtils.saveCurrentConversation(currentMessages)}
+                className="w-full bg-yellow-100 text-yellow-700 px-4 py-2 rounded-lg hover:bg-yellow-200 transition-colors flex items-center gap-2"
+                disabled={currentMessages.length === 0}
+              >
+                <span>💾</span>
+                Save Chat
+              </button>
+            </div>
+
             <div className="mt-auto">
               <button 
                 onClick={handleEndSession}
@@ -178,7 +225,28 @@ const App: React.FC = () => {
             {/* Input Area */}
             <div className="bg-white border-t-2 border-gray-200 p-6">
               <div className="max-w-4xl mx-auto">
-                <SimpleChatInput apiKey={apiKey} />
+                <div className="flex items-end gap-3">
+                  <div className="flex-1">
+                    <SimpleChatInput 
+                      apiKey={apiKey} 
+                      specialty={selectedSpecialty}
+                      onMessageSent={(userMsg, aiMsg) => {
+                        setCurrentMessages(prev => [...prev, userMsg, aiMsg]);
+                      }}
+                    />
+                  </div>
+                  <VoiceChat
+                    onVoiceInput={(text) => {
+                      // Auto-send voice input
+                      const event = new CustomEvent('voiceInput', { detail: text });
+                      document.dispatchEvent(event);
+                    }}
+                    onVoiceResponse={(text) => {
+                      console.log('AI is speaking:', text);
+                    }}
+                    isEnabled={voiceEnabled}
+                  />
+                </div>
                 <div className="mt-3 text-xs text-gray-500 text-center">
                   For educational purposes. Always consult your healthcare provider.
                 </div>
@@ -202,6 +270,25 @@ const App: React.FC = () => {
       {hasUpdate && (
         <PWAUpdateNotification onUpdate={handlePWAUpdate} />
       )}
+
+      {/* Conversation History Panel */}
+      <ConversationHistoryPanel
+        isOpen={showHistory}
+        onClose={() => setShowHistory(false)}
+        onSelectConversation={(conversation) => {
+          // Load selected conversation
+          console.log('Loading conversation:', conversation.title);
+          // Here you would restore the conversation messages to the chat
+        }}
+        onNewConversation={() => {
+          // Clear current chat and start new
+          setCurrentMessages([]);
+          const chatContainer = document.getElementById('chat-messages');
+          if (chatContainer) {
+            chatContainer.innerHTML = '';
+          }
+        }}
+      />
     </div>
   );
 };
