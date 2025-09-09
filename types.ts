@@ -14,6 +14,9 @@ export interface Message {
   }[];
   suggestions?: string[];
   timestamp?: number;
+  isUser?: boolean;
+  content?: string;
+  images?: string[];
 }
 
 export interface Conversation {
@@ -228,26 +231,17 @@ export interface ShareableContent {
   format: ShareOptions['format'];
 }
 
-export interface ShareOptions {
+export interface ExportOptions {
+  format: 'pdf' | 'docx';
+  includeMetadata: boolean;
   includeImages: boolean;
-  includeTimestamp: boolean;
-  includeSource: boolean;
-  format: 'text' | 'markdown' | 'html' | 'json';
-  anonymize: boolean;
-}
-
-export interface ShareableContent {
-  id: string;
-  type: 'message' | 'conversation' | 'image' | 'document';
-  title: string;
-  content: string;
-  images?: string[];
-  metadata?: {
-    timestamp?: number;
-    source?: string;
-    confidence?: number;
-    specialty?: string;
-  };
+  includeTimestamps: boolean;
+  title?: string;
+  author?: string;
+  subject?: string;
+  theme: 'light' | 'dark';
+  pageSize: 'A4' | 'Letter';
+  fontSize: 'small' | 'medium' | 'large';
 }
 
 export interface ShareMethod {

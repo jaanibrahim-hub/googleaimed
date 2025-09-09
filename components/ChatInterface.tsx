@@ -14,6 +14,7 @@ import UserSettings from './UserSettings';
 import EnhancedDocumentUpload from './EnhancedDocumentUpload';
 import OCRResultsViewer from './OCRResultsViewer';
 import ShareDialog from './ShareDialog';
+import ExportButton from './ExportButton';
 import { generateMedicalExplanation, initializeAi } from '../services/geminiService';
 import MedicalLoadingSpinner from './MedicalLoadingSpinner';
 import { useConversationHistory } from '../hooks/useConversationHistory';
@@ -653,6 +654,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
                           <button onClick={() => setShowShareConversation(true)} className="bg-gradient-to-r from-[#E8F4F8] to-[#D1E9F0] border border-[#B8DCE6] text-xs text-[#2E7D95] px-3 py-1 rounded-full hover:from-[#2E7D95] hover:to-[#4A90A4] hover:text-white transition-all">
                             <i className="fas fa-share-alt mr-1"></i>Share Chat
                           </button>
+                        )}
+                        
+                        {messages.length > 0 && currentConversation && (
+                          <ExportButton
+                            conversation={currentConversation}
+                            variant="button"
+                            size="sm"
+                            showLabel={true}
+                          />
                         )}
                     </div>
                  </div>
