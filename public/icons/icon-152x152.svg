@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="152" height="152" viewBox="0 0 152 152" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2E7D95;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4A90A4;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background Circle -->
+  <circle cx="76" cy="76" r="76" fill="url(#grad)"/>
+  
+  <!-- Medical Cross -->
+  <rect x="60.800000000000004" y="30.400000000000002" width="30.400000000000002" height="91.2" fill="white" rx="3.04"/>
+  <rect x="30.400000000000002" y="60.800000000000004" width="91.2" height="30.400000000000002" fill="white" rx="3.04"/>
+  
+  <!-- Heart accent -->
+  <path d="M76 114 
+           Q68.4 106.39999999999999 60.800000000000004 114
+           Q60.800000000000004 121.60000000000001 68.4 121.60000000000001
+           L76 129.2
+           L83.60000000000001 121.60000000000001
+           Q91.2 121.60000000000001 91.2 114
+           Q83.60000000000001 106.39999999999999 76 114 Z" 
+        fill="white" opacity="0.8"/>
+</svg>

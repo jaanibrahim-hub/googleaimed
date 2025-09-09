@@ -4,7 +4,38 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- PWA Meta Tags -->
     <title>MediTeach AI - Your Personal Medical Guide</title>
+    <meta name="description" content="Transform complex medical information into compassionate, easy-to-understand visual explanations using AI">
+    <meta name="keywords" content="medical AI, health education, medical guide, AI diagnosis explanation, medical visualization">
+    <meta name="author" content="MediTeach AI">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Theme Colors -->
+    <meta name="theme-color" content="#2E7D95">
+    <meta name="msapplication-TileColor" content="#2E7D95">
+    
+    <!-- Apple PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="MediTeach AI">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    
+    <!-- Microsoft PWA Meta Tags -->
+    <meta name="msapplication-config" content="/browserconfig.xml">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-192x192.png">
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" as="style">
+    <link rel="preload" href="https://cdn.tailwindcss.com" as="script">
+    
+    <!-- External Dependencies -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -23,7 +54,53 @@
         font-family: 'Inter', 'Segoe UI', sans-serif;
         background: linear-gradient(135deg, #F8FBFF 0%, #E8F4F8 100%);
       }
+      
+      /* PWA Loading Spinner */
+      .pwa-loading {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+      }
+      
+      /* PWA Splash Screen Styles */
+      @media (display-mode: standalone) {
+        body {
+          /* Remove any browser UI specific styles when in standalone mode */
+          -webkit-user-select: none;
+          -webkit-touch-callout: none;
+        }
+      }
     </style>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+      // Register service worker when page loads
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' })
+            .then((registration) => {
+              console.log('🏥 MediTeach AI: Service Worker registered successfully');
+              
+              // Check for updates
+              registration.update();
+              
+              // Listen for waiting service worker
+              if (registration.waiting) {
+                console.log('🔄 Update available');
+              }
+              
+              registration.addEventListener('updatefound', () => {
+                console.log('🔍 New update found');
+              });
+            })
+            .catch((error) => {
+              console.error('❌ Service Worker registration failed:', error);
+            });
+        });
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
