@@ -4,6 +4,46 @@ interface SimpleChatInputProps {
   apiKey: string;
 }
 
+// Function to add messages to the chat UI
+const addMessageToChat = (sender: 'user' | 'ai', message: string) => {
+  const messagesContainer = document.getElementById('chat-messages');
+  if (!messagesContainer) return;
+
+  const messageDiv = document.createElement('div');
+  messageDiv.className = 'mb-4';
+  
+  if (sender === 'user') {
+    messageDiv.innerHTML = `
+      <div class="flex justify-end">
+        <div class="bg-blue-500 text-white rounded-lg px-4 py-3 max-w-xs lg:max-w-md">
+          <div class="text-sm">${message.replace(/\n/g, '<br>')}</div>
+        </div>
+      </div>
+    `;
+  } else {
+    messageDiv.innerHTML = `
+      <div class="bg-white rounded-lg shadow-sm p-4">
+        <div class="flex items-start gap-4">
+          <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+            AI
+          </div>
+          <div class="flex-1">
+            <div class="text-gray-800 text-sm leading-relaxed">${message.replace(/\n/g, '<br>')}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  messagesContainer.appendChild(messageDiv);
+  
+  // Scroll to bottom
+  const container = document.getElementById('messages-container');
+  if (container) {
+    container.scrollTop = container.scrollHeight;
+  }
+};
+
 const SimpleChatInput: React.FC<SimpleChatInputProps> = ({ apiKey }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -47,12 +87,14 @@ Please provide a clear, compassionate response that educates but doesn't replace
       
       console.log('AI:', aiResponse);
       
-      // In a real implementation, you'd update the chat messages state here
-      alert(`AI Response: ${aiResponse.substring(0, 200)}...`);
+      // Add messages to the chat
+      addMessageToChat('user', userMessage);
+      addMessageToChat('ai', aiResponse);
       
     } catch (error) {
       console.error('Error:', error);
-      alert('Sorry, I encountered an error. Please check your API key and try again.');
+      addMessageToChat('user', userMessage);
+      addMessageToChat('ai', 'I apologize, but I encountered an error processing your request. Please check your API key and try again. If the problem persists, please verify your internet connection.');
     } finally {
       setIsLoading(false);
     }

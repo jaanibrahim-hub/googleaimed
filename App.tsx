@@ -140,7 +140,7 @@ const App: React.FC = () => {
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
+            <div className="flex-1 overflow-y-auto p-6 bg-gray-50" id="messages-container">
               <div className="max-w-4xl mx-auto">
                 {/* Welcome Message */}
                 <div className="bg-white rounded-lg shadow-sm p-6 mb-4">
@@ -169,6 +169,9 @@ const App: React.FC = () => {
                     </div>
                   </div>
                 </div>
+                
+                {/* Chat Messages will be added here dynamically */}
+                <div id="chat-messages"></div>
               </div>
             </div>
 
