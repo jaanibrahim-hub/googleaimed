@@ -5,6 +5,7 @@ interface HeaderProps {
     onDownloadAll: () => void;
     onEndSession: () => void;
     onShowHistory?: () => void;
+    onShowSettings?: () => void;
     conversationCount?: number;
     currentConversationTitle?: string;
 }
@@ -14,6 +15,7 @@ const Header: React.FC<HeaderProps> = ({
   onDownloadAll, 
   onEndSession, 
   onShowHistory,
+  onShowSettings,
   conversationCount = 0,
   currentConversationTitle
 }) => {
@@ -45,6 +47,17 @@ const Header: React.FC<HeaderProps> = ({
                       {conversationCount > 99 ? '99+' : conversationCount}
                     </span>
                   )}
+              </button>
+            )}
+            
+            {onShowSettings && (
+              <button
+                  onClick={onShowSettings}
+                  className="bg-white/20 hover:bg-white/30 text-white font-semibold px-3 sm:px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                  title="Open settings"
+              >
+                  <i className="fas fa-cog"></i>
+                  <span className="hidden lg:inline">Settings</span>
               </button>
             )}
             

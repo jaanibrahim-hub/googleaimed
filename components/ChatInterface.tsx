@@ -8,11 +8,15 @@ import ConversationHistory from './ConversationHistory';
 import ConversationExportImport from './ConversationExportImport';
 import MedicalSpecialtySelector from './MedicalSpecialtySelector';
 import SpecialtyIndicator from './SpecialtyIndicator';
+import VoiceControl from './VoiceControl';
+import VoiceSettings from './VoiceSettings';
+import UserSettings from './UserSettings';
 import { generateMedicalExplanation, initializeAi } from '../services/geminiService';
 import MedicalLoadingSpinner from './MedicalLoadingSpinner';
 import { useConversationHistory } from '../hooks/useConversationHistory';
 import { useMedicalSpecialty } from '../hooks/useMedicalSpecialty';
 import { useOnboarding } from '../hooks/useOnboarding';
+import { useVoice } from '../hooks/useVoice';
 import OnboardingModal from './OnboardingModal';
 import FirstTimeUserWelcome from './FirstTimeUserWelcome';
 
@@ -97,6 +101,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
     const [showHistory, setShowHistory] = useState(false);
     const [showExportImport, setShowExportImport] = useState(false);
     const [showSpecialtySelector, setShowSpecialtySelector] = useState(false);
+    const [showVoiceSettings, setShowVoiceSettings] = useState(false);
+    const [showUserSettings, setShowUserSettings] = useState(false);
 
     // Conversation history management
     const {
@@ -130,6 +136,18 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
         completeOnboarding,
         checkAndStartOnboarding
     } = useOnboarding();
+
+    // Voice functionality
+    const {
+        speak,
+        stopSpeaking,
+        settings: voiceSettings,
+        error: voiceError
+    } = useVoice({
+        onCommand: handleVoiceCommand,
+        onError: (error) => setError(`Voice Error: ${error}`),
+        enableWakeWord: true
+    });
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -399,6 +417,69 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
         }, 500);
     };
 
+    // Voice command handlers
+    const handleVoiceCommand = useCallback((command: string) => {
+        const lowerCommand = command.toLowerCase().trim();
+        
+        switch (lowerCommand) {
+            case 'clear chat':
+            case 'clear conversation':
+                handleNewConversation();
+                break;
+            case 'new conversation':
+            case 'start new chat':
+                handleNewConversation();
+                break;
+            case 'show history':
+            case 'conversation history':
+                setShowHistory(true);
+                break;
+            case 'show specialties':
+            case 'select specialty':
+                setShowSpecialtySelector(true);
+                break;
+            case 'voice settings':
+            case 'settings':
+                setShowVoiceSettings(true);
+                break;
+            case 'read last message':
+            case 'read response':
+                if (messages.length > 0) {
+                    const lastAiMessage = messages.slice().reverse().find(msg => msg.sender === Sender.AI);
+                    if (lastAiMessage) {
+                        speak(lastAiMessage.text).catch(console.error);
+                    }
+                }
+                break;
+            case 'help':
+            case 'show help':
+                const helpMessage = "You can use voice commands like: Clear chat, New conversation, Show history, Voice settings, Read last message, or just ask medical questions naturally.";
+                speak(helpMessage).catch(console.error);
+                break;
+            default:
+                console.log('Unknown voice command:', command);
+        }
+    }, [handleNewConversation, messages, speak]);
+
+    // Handle voice input
+    const handleVoiceInput = useCallback((transcript: string) => {
+        setUserInput(transcript);
+        // Auto-send voice input after a brief delay
+        setTimeout(() => {
+            handleSendMessage(transcript);
+        }, 500);
+    }, [handleSendMessage]);
+
+    // Auto-read AI responses if enabled
+    useEffect(() => {
+        if (voiceSettings.autoRead && messages.length > 0) {
+            const lastMessage = messages[messages.length - 1];
+            if (lastMessage.sender === Sender.AI && lastMessage.text) {
+                speak(lastMessage.text).catch(console.error);
+            }
+        }
+    }, [messages, voiceSettings.autoRead, speak]);
+
     return (
         <div className="flex flex-col h-full bg-[#F8FBFF]">
             <Header 
@@ -406,6 +487,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
                 onDownloadAll={handleDownloadAll}
                 onEndSession={onEndSession}
                 onShowHistory={handleShowHistory}
+                onShowSettings={() => setShowUserSettings(true)}
                 conversationCount={conversationCount}
                 currentConversationTitle={currentConversation?.title}
             />
@@ -453,11 +535,20 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
                         value={userInput}
                         onChange={(e) => setUserInput(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && !isLoading && handleSendMessage()}
-                        placeholder="Ask about your medical condition, upload documents..."
+                        placeholder="Ask about your medical condition, upload documents, or use voice..."
                         className="flex-1 bg-transparent focus:outline-none text-base"
                         disabled={isLoading}
                         data-onboarding-id="chat-input"
                     />
+                    
+                    {/* Voice Control */}
+                    <VoiceControl
+                        onVoiceInput={handleVoiceInput}
+                        onVoiceCommand={handleVoiceCommand}
+                        disabled={isLoading}
+                        className="flex-shrink-0"
+                    />
+                    
                     <button
                         onClick={() => handleSendMessage()}
                         disabled={isLoading || (!userInput.trim() && uploadedFiles.length === 0)}
@@ -490,6 +581,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
                         {hasHistory && (
                           <button onClick={() => setShowExportImport(true)} className="bg-gradient-to-r from-[#E8F4F8] to-[#D1E9F0] border border-[#B8DCE6] text-xs text-[#2E7D95] px-3 py-1 rounded-full hover:from-[#2E7D95] hover:to-[#4A90A4] hover:text-white transition-all">
                             <i className="fas fa-download mr-1"></i>Backup
+                          </button>
+                        )}
+                        
+                        {voiceSettings.isSupported && (
+                          <button onClick={() => setShowVoiceSettings(true)} className="bg-gradient-to-r from-[#E8F4F8] to-[#D1E9F0] border border-[#B8DCE6] text-xs text-[#2E7D95] px-3 py-1 rounded-full hover:from-[#2E7D95] hover:to-[#4A90A4] hover:text-white transition-all">
+                            <i className="fas fa-microphone-alt mr-1"></i>Voice
                           </button>
                         )}
                     </div>
@@ -529,6 +626,16 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
                 flow={currentFlow}
                 onSpecialtySelectorDemo={handleOnboardingSpecialtyDemo}
                 onInputDemo={handleOnboardingInputDemo}
+            />
+            
+            <VoiceSettings
+                isOpen={showVoiceSettings}
+                onClose={() => setShowVoiceSettings(false)}
+            />
+            
+            <UserSettings
+                isOpen={showUserSettings}
+                onClose={() => setShowUserSettings(false)}
             />
         </div>
     );

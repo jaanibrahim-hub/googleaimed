@@ -59,6 +59,12 @@ export interface UserPreferences {
   language: string;
   autoSave: boolean;
   hasCompletedOnboarding: boolean;
+  voiceEnabled: boolean;
+  voiceLanguage: string;
+  voiceRate: number;
+  voicePitch: number;
+  autoReadResponses: boolean;
+  wakeWordEnabled: boolean;
 }
 
 export interface OnboardingStep {
@@ -84,4 +90,21 @@ export interface OnboardingFlow {
   description: string;
   steps: OnboardingStep[];
   estimatedTime: number; // in minutes
+}
+
+export interface VoiceSettings {
+  isListening: boolean;
+  isSupported: boolean;
+  language: string;
+  rate: number;
+  pitch: number;
+  volume: number;
+  autoRead: boolean;
+  wakeWordEnabled: boolean;
+}
+
+export interface SpeechRecognitionResult {
+  transcript: string;
+  confidence: number;
+  isFinal: boolean;
 }
