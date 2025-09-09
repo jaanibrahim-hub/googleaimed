@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Message as MessageType, Sender } from '../types';
+import ShareButton from './ShareButton';
 
 const MedicalContextBadge: React.FC<{ message: MessageType }> = ({ message }) => {
     if (message.sender !== Sender.User || !message.uploadedImages) {
@@ -40,11 +41,16 @@ const MedicalContextBadge: React.FC<{ message: MessageType }> = ({ message }) =>
 
 const Message: React.FC<{ message: MessageType, onImageClick: (url: string) => void, onSuggestionClick?: (suggestion: string) => void }> = ({ message, onImageClick, onSuggestionClick }) => {
     const isUser = message.sender === Sender.User;
+    const [showActions, setShowActions] = useState(false);
 
     return (
-        <div className={`flex items-start gap-4 ${isUser ? 'justify-end' : ''}`}>
+        <div className={`group flex items-start gap-4 ${isUser ? 'justify-end' : ''}`}>
             <div className={`max-w-xl w-full ${isUser ? 'ml-12' : 'mr-12'}`}>
-                 <div className={`p-4 rounded-2xl shadow-md text-base ${isUser ? 'bg-gradient-to-r from-[#E8F4F8] to-[#D1E9F0] border border-[#B8DCE6] text-[#1A2B42] rounded-br-lg' : 'bg-white border-2 border-[#7FB069] text-[#1A2B42] rounded-bl-lg'}`}>
+                <div className="relative">
+                    <div className={`p-4 rounded-2xl shadow-md text-base ${isUser ? 'theme-surface border theme-border rounded-br-lg' : 'theme-surface border-2 border-[var(--color-accent)] theme-text rounded-bl-lg'}`}
+                         onMouseEnter={() => setShowActions(true)}
+                         onMouseLeave={() => setShowActions(false)}
+                    >
                     {!isUser && (
                          <div className="flex items-center gap-2 font-bold text-[#2E7D95] mb-2">
                              <i className="fas fa-hospital-user"></i>
@@ -78,12 +84,12 @@ const Message: React.FC<{ message: MessageType, onImageClick: (url: string) => v
                         </div>
                     )}
                      {message.suggestions && message.suggestions.length > 0 && !isUser && (
-                        <div className="mt-4 pt-4 border-t border-slate-200 flex flex-wrap gap-2">
+                        <div className="mt-4 pt-4 border-t theme-border flex flex-wrap gap-2">
                             {message.suggestions.map((suggestion, index) => (
                                 <button
                                     key={index}
                                     onClick={() => onSuggestionClick?.(suggestion)}
-                                    className="bg-gradient-to-r from-[#E8F4F8] to-[#D1E9F0] border border-[#B8DCE6] text-xs text-[#2E7D95] px-3 py-1.5 rounded-full hover:from-[#2E7D95] hover:to-[#4A90A4] hover:text-white transition-all"
+                                    className="theme-button-secondary text-xs px-3 py-1.5 rounded-full transition-all"
                                 >
                                     {suggestion}
                                 </button>
@@ -91,6 +97,42 @@ const Message: React.FC<{ message: MessageType, onImageClick: (url: string) => v
                         </div>
                     )}
                 </div>
+                
+                {/* Message Actions */}
+                {(showActions || window.innerWidth <= 768) && !isUser && (
+                    <div className="flex items-center justify-end gap-2 mt-2 pr-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <ShareButton
+                            content={message}
+                            contentType="message"
+                            variant="icon"
+                            size="sm"
+                        />
+                        
+                        {message.imageUrl && (
+                            <button
+                                onClick={() => onImageClick(message.imageUrl!)}
+                                className="w-6 h-6 flex items-center justify-center rounded-full transition-all hover:bg-gray-100 dark:hover:bg-gray-700 p-1"
+                                title="View full image"
+                            >
+                                <i className="fas fa-expand text-xs text-gray-500 hover:text-blue-500"></i>
+                            </button>
+                        )}
+                        
+                        <button
+                            onClick={() => {
+                                const text = message.text;
+                                navigator.clipboard.writeText(text).then(() => {
+                                    // Could show a toast notification here
+                                });
+                            }}
+                            className="w-6 h-6 flex items-center justify-center rounded-full transition-all hover:bg-gray-100 dark:hover:bg-gray-700 p-1"
+                            title="Copy text"
+                        >
+                            <i className="fas fa-copy text-xs text-gray-500 hover:text-green-500"></i>
+                        </button>
+                    </div>
+                )}
+            </div>
             </div>
         </div>
     );

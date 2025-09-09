@@ -205,3 +205,56 @@ export interface Medication {
   frequency?: string;
   instructions?: string;
 }
+
+export interface ShareOptions {
+  includeImages: boolean;
+  includeMetadata: boolean;
+  format: 'text' | 'markdown' | 'html' | 'json';
+  privacy: 'anonymous' | 'personal';
+}
+
+export interface ShareableContent {
+  id: string;
+  type: 'message' | 'conversation' | 'image' | 'document';
+  title: string;
+  content: string;
+  metadata?: {
+    timestamp: number;
+    specialty?: string;
+    messageCount?: number;
+    hasImages?: boolean;
+  };
+  images?: string[];
+  format: ShareOptions['format'];
+}
+
+export interface ShareOptions {
+  includeImages: boolean;
+  includeTimestamp: boolean;
+  includeSource: boolean;
+  format: 'text' | 'markdown' | 'html' | 'json';
+  anonymize: boolean;
+}
+
+export interface ShareableContent {
+  id: string;
+  type: 'message' | 'conversation' | 'image' | 'document';
+  title: string;
+  content: string;
+  images?: string[];
+  metadata?: {
+    timestamp?: number;
+    source?: string;
+    confidence?: number;
+    specialty?: string;
+  };
+}
+
+export interface ShareMethod {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+  action: (content: ShareableContent, options: ShareOptions) => Promise<void>;
+  supported: boolean;
+}
