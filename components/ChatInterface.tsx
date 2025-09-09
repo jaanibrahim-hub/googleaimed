@@ -94,7 +94,7 @@ VISUAL OUTPUT: Create a personalized medical education infographic:
 
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onMobileUploadClick, onEndSession }) => {
-    console.log('💬 ChatInterface rendering with API key:', apiKey.substring(0, 10) + '...');
+
     
     const [messages, setMessages] = useState<MessageType[]>([]);
     const [userInput, setUserInput] = useState('');
@@ -114,24 +114,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
     const [selectedDocument, setSelectedDocument] = useState<DocumentUpload | null>(null);
     const [showShareConversation, setShowShareConversation] = useState(false);
 
-    // Conversation history management
-    let conversationHookData;
-    try {
-        conversationHookData = useConversationHistory();
-        console.log('✅ Conversation history hook loaded');
-    } catch (error) {
-        console.error('❌ Conversation history hook failed:', error);
-        conversationHookData = {
-            currentConversation: null,
-            currentConversationId: null,
-            startNewConversation: () => {},
-            loadConversation: () => null,
-            enableAutoSave: () => {},
-            disableAutoSave: () => {},
-            hasHistory: false,
-            conversationCount: 0
-        };
-    }
+    // Hooks
     const {
         currentConversation,
         currentConversationId,
@@ -141,24 +124,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
         disableAutoSave,
         hasHistory,
         conversationCount
-    } = conversationHookData;
+    } = useConversationHistory();
 
-    // Medical specialty management
-    let specialtyHookData;
-    try {
-        specialtyHookData = useMedicalSpecialty();
-        console.log('✅ Medical specialty hook loaded');
-    } catch (error) {
-        console.error('❌ Medical specialty hook failed:', error);
-        specialtyHookData = {
-            selectedSpecialty: null,
-            preferences: {},
-            setSelectedSpecialty: () => {},
-            detectSpecialtyFromText: () => [],
-            getQuickActions: () => [],
-            generateSpecialtyPrompt: () => ''
-        };
-    }
     const {
         selectedSpecialty,
         preferences,
@@ -166,25 +133,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
         detectSpecialtyFromText,
         getQuickActions,
         generateSpecialtyPrompt
-    } = specialtyHookData;
+    } = useMedicalSpecialty();
 
-    // Onboarding management
-    let onboardingHookData;
-    try {
-        onboardingHookData = useOnboarding();
-        console.log('✅ Onboarding hook loaded');
-    } catch (error) {
-        console.error('❌ Onboarding hook failed:', error);
-        onboardingHookData = {
-            isOnboardingOpen: false,
-            currentFlow: null,
-            shouldShowOnboarding: false,
-            startOnboarding: () => {},
-            closeOnboarding: () => {},
-            completeOnboarding: () => {},
-            checkAndStartOnboarding: () => {}
-        };
-    }
     const {
         isOnboardingOpen,
         currentFlow,
@@ -193,32 +143,18 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
         closeOnboarding,
         completeOnboarding,
         checkAndStartOnboarding
-    } = onboardingHookData;
+    } = useOnboarding();
 
-    // Voice functionality - temporarily disable to isolate issue
-    let voiceHookData;
-    try {
-        voiceHookData = useVoice({
-            onCommand: () => {},
-            onError: (error) => setError(`Voice Error: ${error}`),
-            enableWakeWord: false // Disable to reduce complexity
-        });
-        console.log('✅ Voice hook loaded');
-    } catch (error) {
-        console.error('❌ Voice hook failed:', error);
-        voiceHookData = {
-            speak: async () => {},
-            stopSpeaking: () => {},
-            settings: { isListening: false, isSupported: false, language: 'en-US', rate: 1, pitch: 1, volume: 1, autoRead: false, wakeWordEnabled: false },
-            error: null
-        };
-    }
     const {
         speak,
         stopSpeaking,
         settings: voiceSettings,
         error: voiceError
-    } = voiceHookData;
+    } = useVoice({
+        onCommand: handleVoiceCommand,
+        onError: (error) => setError(`Voice Error: ${error}`),
+        enableWakeWord: true
+    });
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -599,7 +535,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
     };
 
     return (
-        <div className="flex flex-col h-full theme-surface">
+        <div className="flex flex-col h-screen theme-surface">
             <Header 
                 imageCount={generatedImageUrls.length} 
                 onDownloadAll={handleDownloadAll}

@@ -14,7 +14,7 @@ const App: React.FC = () => {
   const { isInstalled, hasUpdate, update, checkForUpdates } = usePWA();
   const { theme, isDarkMode } = useTheme();
   
-  console.log('🔍 App render - apiKey exists:', !!apiKey, 'theme:', theme, 'isDarkMode:', isDarkMode);
+
 
 
 
@@ -42,11 +42,9 @@ const App: React.FC = () => {
   }, []);
 
   const handleApiKeySubmit = (key: string) => {
-    console.log('🔑 API key submitted:', key.substring(0, 10) + '...');
     try {
         localStorage.setItem('geminiApiKey', key);
         setApiKey(key);
-        console.log('✅ API key saved and state updated');
     } catch (error) {
         console.error("Could not save API key to local storage:", error);
         alert("Could not save your API key. Your browser might be in private mode or has storage disabled.");
@@ -79,34 +77,12 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className={`h-screen w-screen overflow-hidden font-['Inter'] relative transition-all duration-300 ${
+    <div className={`min-h-screen w-screen font-['Inter'] transition-all duration-300 ${
       isDarkMode ? 'dark-theme bg-slate-900 text-slate-100' : 'light-theme bg-gradient-to-br from-blue-50 to-cyan-50 text-slate-800'
-    }`}>
+    } ${apiKey ? 'h-screen overflow-hidden' : ''}`}>
       {/* Main App Content */}
       {apiKey ? (
-        <div className="h-full w-full bg-white p-8">
-          <div className="text-2xl font-bold text-green-600 mb-4">
-            ✅ ChatView Loading Successfully!
-          </div>
-          <div className="text-lg text-gray-700 mb-4">
-            API Key: {apiKey.substring(0, 10)}...
-          </div>
-          <div className="bg-blue-50 p-4 rounded-lg mb-4">
-            <p className="text-blue-800">
-              This confirms the API key is working and the ChatView should load.
-              If you see this message, the transition from LandingPage to ChatView is successful.
-            </p>
-          </div>
-          <button 
-            onClick={handleEndSession}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-          >
-            End Session (Go Back)
-          </button>
-          <div className="mt-4">
-            <ChatView apiKey={apiKey} onEndSession={handleEndSession} />
-          </div>
-        </div>
+        <ChatView apiKey={apiKey} onEndSession={handleEndSession} />
       ) : (
         <LandingPage onApiKeySubmit={handleApiKeySubmit} />
       )}

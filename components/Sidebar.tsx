@@ -6,7 +6,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ onUploadClick }) => {
     return (
-        <aside className="bg-white border-r-2 border-[#E1F0F5] p-6 h-full flex flex-col shadow-lg">
+        <aside className="bg-white border-r-2 border-[#E1F0F5] p-6 h-screen flex flex-col shadow-lg overflow-y-auto">
             <div className="text-center mb-8">
                 <div className="w-24 h-24 bg-gradient-to-br from-[#2E7D95] to-[#4A90A4] rounded-full flex items-center justify-center mx-auto mb-4 text-white text-4xl">
                     <i className="fas fa-user-md"></i>
