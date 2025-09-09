@@ -13,6 +13,10 @@ const App: React.FC = () => {
   const [apiKey, setApiKey] = useState<string | null>(null);
   const { isInstalled, hasUpdate, update, checkForUpdates } = usePWA();
   const { theme, isDarkMode } = useTheme();
+  
+  console.log('🔍 App render - apiKey exists:', !!apiKey, 'theme:', theme, 'isDarkMode:', isDarkMode);
+
+
 
   useEffect(() => {
     try {
@@ -38,9 +42,11 @@ const App: React.FC = () => {
   }, []);
 
   const handleApiKeySubmit = (key: string) => {
+    console.log('🔑 API key submitted:', key.substring(0, 10) + '...');
     try {
         localStorage.setItem('geminiApiKey', key);
         setApiKey(key);
+        console.log('✅ API key saved and state updated');
     } catch (error) {
         console.error("Could not save API key to local storage:", error);
         alert("Could not save your API key. Your browser might be in private mode or has storage disabled.");
@@ -78,7 +84,29 @@ const App: React.FC = () => {
     }`}>
       {/* Main App Content */}
       {apiKey ? (
-        <ChatView apiKey={apiKey} onEndSession={handleEndSession} />
+        <div className="h-full w-full bg-white p-8">
+          <div className="text-2xl font-bold text-green-600 mb-4">
+            ✅ ChatView Loading Successfully!
+          </div>
+          <div className="text-lg text-gray-700 mb-4">
+            API Key: {apiKey.substring(0, 10)}...
+          </div>
+          <div className="bg-blue-50 p-4 rounded-lg mb-4">
+            <p className="text-blue-800">
+              This confirms the API key is working and the ChatView should load.
+              If you see this message, the transition from LandingPage to ChatView is successful.
+            </p>
+          </div>
+          <button 
+            onClick={handleEndSession}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+          >
+            End Session (Go Back)
+          </button>
+          <div className="mt-4">
+            <ChatView apiKey={apiKey} onEndSession={handleEndSession} />
+          </div>
+        </div>
       ) : (
         <LandingPage onApiKeySubmit={handleApiKeySubmit} />
       )}

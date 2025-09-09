@@ -9,6 +9,8 @@ interface ChatViewProps {
 
 const ChatView: React.FC<ChatViewProps> = ({ apiKey, onEndSession }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  console.log('🎯 ChatView rendering with API key:', apiKey.substring(0, 10) + '...');
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
