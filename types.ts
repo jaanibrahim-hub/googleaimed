@@ -40,3 +40,22 @@ export interface ConversationSummary {
   tags: string[];
   lastMessage?: string;
 }
+
+export interface MedicalSpecialty {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+  color: string;
+  keywords: string[];
+  commonConditions: string[];
+  quickActions: string[];
+}
+
+export interface UserPreferences {
+  selectedSpecialty: string | null;
+  responseComplexity: 'basic' | 'intermediate' | 'advanced';
+  visualPreference: boolean;
+  language: string;
+  autoSave: boolean;
+}

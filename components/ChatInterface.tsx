@@ -6,9 +6,12 @@ import Welcome from './Welcome';
 import Header from './Header';
 import ConversationHistory from './ConversationHistory';
 import ConversationExportImport from './ConversationExportImport';
+import MedicalSpecialtySelector from './MedicalSpecialtySelector';
+import SpecialtyIndicator from './SpecialtyIndicator';
 import { generateMedicalExplanation, initializeAi } from '../services/geminiService';
 import MedicalLoadingSpinner from './MedicalLoadingSpinner';
 import { useConversationHistory } from '../hooks/useConversationHistory';
+import { useMedicalSpecialty } from '../hooks/useMedicalSpecialty';
 
 interface ChatInterfaceProps {
     apiKey: string;
@@ -90,6 +93,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
     const [generatedImageUrls, setGeneratedImageUrls] = useState<string[]>([]);
     const [showHistory, setShowHistory] = useState(false);
     const [showExportImport, setShowExportImport] = useState(false);
+    const [showSpecialtySelector, setShowSpecialtySelector] = useState(false);
 
     // Conversation history management
     const {
@@ -102,6 +106,16 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
         hasHistory,
         conversationCount
     } = useConversationHistory();
+
+    // Medical specialty management
+    const {
+        selectedSpecialty,
+        preferences,
+        setSelectedSpecialty,
+        detectSpecialtyFromText,
+        getQuickActions,
+        generateSpecialtyPrompt
+    } = useMedicalSpecialty();
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -214,11 +228,16 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
                 return `${msg.sender}: ${msg.text}`;
             }).filter(Boolean);
 
-            const medicalPrompt = buildSpecializedMedicalPrompt(
+            // Build base medical prompt
+            const baseMedicalPrompt = buildSpecializedMedicalPrompt(
                 trimmedInput,
                 currentUploadedFiles,
                 characterDescription
             );
+
+            // Add specialty-specific context
+            const specialtyPromptEnhancement = generateSpecialtyPrompt(trimmedInput);
+            const medicalPrompt = baseMedicalPrompt + specialtyPromptEnhancement;
             
             const result = await generateMedicalExplanation(
                 medicalPrompt, 
@@ -248,7 +267,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
         } finally {
             setIsLoading(false);
         }
-    }, [userInput, uploadedFiles, characterDescription, messages]);
+    }, [userInput, uploadedFiles, characterDescription, messages, generateSpecialtyPrompt]);
 
     const handleDownloadAll = async () => {
         if (generatedImageUrls.length === 0) return;
@@ -324,6 +343,30 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
         }
     };
 
+    // Medical specialty handlers
+    const handleShowSpecialtySelector = () => {
+        setShowSpecialtySelector(true);
+    };
+
+    const handleSpecialtyChange = (specialty: any) => {
+        setSelectedSpecialty(specialty);
+        setShowSpecialtySelector(false);
+    };
+
+    // Auto-detect specialty from user input
+    useEffect(() => {
+        if (userInput.length > 20 && !selectedSpecialty) {
+            const detectedSpecialties = detectSpecialtyFromText(userInput);
+            if (detectedSpecialties.length > 0) {
+                // Could show a suggestion here, but for now just log it
+                console.log('🔍 Detected potential specialties:', detectedSpecialties.map(s => s.name));
+            }
+        }
+    }, [userInput, selectedSpecialty, detectSpecialtyFromText]);
+
+    // Get current quick actions based on specialty
+    const currentQuickActions = getQuickActions();
+
     return (
         <div className="flex flex-col h-full bg-[#F8FBFF]">
             <Header 
@@ -336,7 +379,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
             />
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
                 {messages.length === 0 ? (
-                    <Welcome onShowHistory={handleShowHistory} />
+                    <Welcome 
+                        onShowHistory={handleShowHistory} 
+                        onShowSpecialtySelector={handleShowSpecialtySelector}
+                    />
                 ) : (
                     messages.map((msg) => (
                         <Message key={msg.id} message={msg} onImageClick={setModalImageUrl} onSuggestionClick={handleSendMessage} />
@@ -348,7 +394,20 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
             </div>
 
             <div className="bg-white p-4 sm:p-5 lg:p-6 border-t-2 border-[#E1F0F5]">
-                 <div className="flex items-center gap-3 bg-[#F8FBFF] border-2 border-[#E1F0F5] rounded-full p-2 focus-within:border-[#2E7D95] focus-within:ring-2 focus-within:ring-[#2E7D95]/50 transition-all duration-300">
+                {/* Medical Specialty Indicator */}
+                <div className="mb-3 flex items-center justify-between">
+                    <SpecialtyIndicator
+                        specialty={selectedSpecialty}
+                        onClick={handleShowSpecialtySelector}
+                        className="text-xs"
+                    />
+                    <div className="text-xs text-gray-500 flex items-center space-x-1">
+                        <i className="fas fa-info-circle"></i>
+                        <span>Responses tailored to {selectedSpecialty?.name || 'general medicine'}</span>
+                    </div>
+                </div>
+                
+                 <div className="flex items-center gap-3 bg-[#F8FBFF] border-2 border-[#E1F0F5] rounded-full p-2 focus-within:border-[#2E7D95] focus-within:ring-2 focus-[#2E7D95]/50 transition-all duration-300">
                     <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*,application/pdf" className="hidden" multiple />
                     <button onClick={onMobileUploadClick} className="p-2 text-gray-500 hover:text-[#2E7D95] rounded-full transition-colors">
                         <i className="fas fa-paperclip text-lg"></i>
@@ -376,9 +435,20 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
                         <span>For educational purposes. Always consult your healthcare provider.</span>
                     </div>
                     <div className="flex gap-2 flex-wrap">
-                        <button onClick={() => handleQuickAction('Explain my diagnosis')} className="bg-gradient-to-r from-[#E8F4F8] to-[#D1E9F0] border border-[#B8DCE6] text-xs text-[#2E7D95] px-3 py-1 rounded-full hover:from-[#2E7D95] hover:to-[#4A90A4] hover:text-white transition-all">Explain my diagnosis</button>
-                        <button onClick={() => handleQuickAction('Understand my treatment')} className="bg-gradient-to-r from-[#E8F4F8] to-[#D1E9F0] border border-[#B8DCE6] text-xs text-[#2E7D95] px-3 py-1 rounded-full hover:from-[#2E7D95] hover:to-[#4A90A4] hover:text-white transition-all">Understand my treatment</button>
-                        <button onClick={() => handleQuickAction('Medication side effects')} className="bg-gradient-to-r from-[#E8F4F8] to-[#D1E9F0] border border-[#B8DCE6] text-xs text-[#2E7D95] px-3 py-1 rounded-full hover:from-[#2E7D95] hover:to-[#4A90A4] hover:text-white transition-all">Medication side effects</button>
+                        {/* Dynamic quick actions based on selected specialty */}
+                        {currentQuickActions.map((action, index) => (
+                          <button 
+                            key={index}
+                            onClick={() => handleQuickAction(action)} 
+                            className="bg-gradient-to-r from-[#E8F4F8] to-[#D1E9F0] border border-[#B8DCE6] text-xs text-[#2E7D95] px-3 py-1 rounded-full hover:from-[#2E7D95] hover:to-[#4A90A4] hover:text-white transition-all"
+                            style={selectedSpecialty ? {
+                              borderColor: `${selectedSpecialty.color}40`,
+                              background: `linear-gradient(135deg, ${selectedSpecialty.color}15, ${selectedSpecialty.color}25)`
+                            } : {}}
+                          >
+                            {action}
+                          </button>
+                        ))}
                         
                         {hasHistory && (
                           <button onClick={() => setShowExportImport(true)} className="bg-gradient-to-r from-[#E8F4F8] to-[#D1E9F0] border border-[#B8DCE6] text-xs text-[#2E7D95] px-3 py-1 rounded-full hover:from-[#2E7D95] hover:to-[#4A90A4] hover:text-white transition-all">
@@ -404,6 +474,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
                 isOpen={showExportImport}
                 onClose={() => setShowExportImport(false)}
                 onImportComplete={handleExportImportComplete}
+            />
+            
+            <MedicalSpecialtySelector
+                isOpen={showSpecialtySelector}
+                onClose={() => setShowSpecialtySelector(false)}
+                onSpecialtyChange={handleSpecialtyChange}
             />
         </div>
     );

@@ -1,12 +1,15 @@
 import React from 'react';
 import { useConversationHistory } from '../hooks/useConversationHistory';
+import { useMedicalSpecialty } from '../hooks/useMedicalSpecialty';
 
 interface WelcomeProps {
   onShowHistory?: () => void;
+  onShowSpecialtySelector?: () => void;
 }
 
-const Welcome: React.FC<WelcomeProps> = ({ onShowHistory }) => {
+const Welcome: React.FC<WelcomeProps> = ({ onShowHistory, onShowSpecialtySelector }) => {
   const { hasHistory, conversationCount } = useConversationHistory();
+  const { selectedSpecialty } = useMedicalSpecialty();
     return (
         <div className="flex justify-center items-center h-full p-4">
             <div className="bg-white rounded-2xl p-8 sm:p-12 max-w-2xl text-center shadow-xl border-2 border-[#E1F0F5]">
@@ -46,21 +49,64 @@ const Welcome: React.FC<WelcomeProps> = ({ onShowHistory }) => {
                     </div>
                 </div>
                 
-                {/* Conversation History CTA */}
-                {hasHistory && onShowHistory && (
-                    <div className="mt-8 p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
+                {/* Medical Specialty CTA */}
+                {onShowSpecialtySelector && (
+                    <div className="mt-8 p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-xl">
                         <div className="flex items-center justify-between">
                             <div className="text-left">
                                 <h4 className="font-semibold text-blue-900 mb-1">
-                                    Continue Your Medical Journey
+                                    {selectedSpecialty ? `${selectedSpecialty.name} Specialist Mode` : 'Choose Your Medical Specialty'}
                                 </h4>
                                 <p className="text-sm text-blue-700">
+                                    {selectedSpecialty 
+                                        ? `Getting tailored responses for ${selectedSpecialty.description.toLowerCase()}`
+                                        : 'Get specialized medical explanations tailored to your area of interest'
+                                    }
+                                </p>
+                            </div>
+                            <button
+                                onClick={onShowSpecialtySelector}
+                                className={`font-medium px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
+                                    selectedSpecialty
+                                        ? 'bg-white border-2 text-gray-700 hover:bg-gray-50'
+                                        : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                }`}
+                                style={selectedSpecialty ? {
+                                    borderColor: selectedSpecialty.color,
+                                    color: selectedSpecialty.color
+                                } : {}}
+                            >
+                                {selectedSpecialty ? (
+                                    <>
+                                        <i className={selectedSpecialty.icon}></i>
+                                        <span>Change</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="fas fa-stethoscope"></i>
+                                        <span>Select Specialty</span>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Conversation History CTA */}
+                {hasHistory && onShowHistory && (
+                    <div className="mt-4 p-4 bg-green-50 border-2 border-green-200 rounded-xl">
+                        <div className="flex items-center justify-between">
+                            <div className="text-left">
+                                <h4 className="font-semibold text-green-900 mb-1">
+                                    Continue Your Medical Journey
+                                </h4>
+                                <p className="text-sm text-green-700">
                                     You have {conversationCount} saved conversation{conversationCount !== 1 ? 's' : ''} with medical insights and explanations.
                                 </p>
                             </div>
                             <button
                                 onClick={onShowHistory}
-                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+                                className="bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
                             >
                                 <i className="fas fa-history"></i>
                                 <span>View History</span>
