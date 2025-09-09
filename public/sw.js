@@ -6,7 +6,7 @@ const RUNTIME_CACHE_NAME = 'mediteach-runtime-v1.2.0';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/assets/index-BnQIfAdG.js', // Main JS bundle
+  '/assets/index-D8njbEWs.js', // Main JS bundle
   '/manifest.json',
   // External dependencies (cached when loaded)
   'https://cdn.tailwindcss.com',

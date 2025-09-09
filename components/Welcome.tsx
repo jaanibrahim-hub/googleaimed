@@ -1,6 +1,12 @@
 import React from 'react';
+import { useConversationHistory } from '../hooks/useConversationHistory';
 
-const Welcome: React.FC = () => {
+interface WelcomeProps {
+  onShowHistory?: () => void;
+}
+
+const Welcome: React.FC<WelcomeProps> = ({ onShowHistory }) => {
+  const { hasHistory, conversationCount } = useConversationHistory();
     return (
         <div className="flex justify-center items-center h-full p-4">
             <div className="bg-white rounded-2xl p-8 sm:p-12 max-w-2xl text-center shadow-xl border-2 border-[#E1F0F5]">
@@ -39,6 +45,29 @@ const Welcome: React.FC = () => {
                         </div>
                     </div>
                 </div>
+                
+                {/* Conversation History CTA */}
+                {hasHistory && onShowHistory && (
+                    <div className="mt-8 p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
+                        <div className="flex items-center justify-between">
+                            <div className="text-left">
+                                <h4 className="font-semibold text-blue-900 mb-1">
+                                    Continue Your Medical Journey
+                                </h4>
+                                <p className="text-sm text-blue-700">
+                                    You have {conversationCount} saved conversation{conversationCount !== 1 ? 's' : ''} with medical insights and explanations.
+                                </p>
+                            </div>
+                            <button
+                                onClick={onShowHistory}
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+                            >
+                                <i className="fas fa-history"></i>
+                                <span>View History</span>
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

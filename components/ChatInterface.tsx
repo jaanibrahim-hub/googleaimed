@@ -4,8 +4,11 @@ import Message from './Message';
 import ImageModal from './ImageModal';
 import Welcome from './Welcome';
 import Header from './Header';
+import ConversationHistory from './ConversationHistory';
+import ConversationExportImport from './ConversationExportImport';
 import { generateMedicalExplanation, initializeAi } from '../services/geminiService';
 import MedicalLoadingSpinner from './MedicalLoadingSpinner';
+import { useConversationHistory } from '../hooks/useConversationHistory';
 
 interface ChatInterfaceProps {
     apiKey: string;
@@ -85,6 +88,20 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
     const [characterDescription, setCharacterDescription] = useState<string | null>(null);
     const [modalImageUrl, setModalImageUrl] = useState<string | null>(null);
     const [generatedImageUrls, setGeneratedImageUrls] = useState<string[]>([]);
+    const [showHistory, setShowHistory] = useState(false);
+    const [showExportImport, setShowExportImport] = useState(false);
+
+    // Conversation history management
+    const {
+        currentConversation,
+        currentConversationId,
+        startNewConversation,
+        loadConversation,
+        enableAutoSave,
+        disableAutoSave,
+        hasHistory,
+        conversationCount
+    } = useConversationHistory();
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -93,6 +110,33 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
         initializeAi(apiKey);
       }
     }, [apiKey]);
+
+    // Load conversation when currentConversation changes
+    useEffect(() => {
+        if (currentConversation) {
+            setMessages(currentConversation.messages);
+            setCharacterDescription(currentConversation.characterDescription || null);
+            
+            // Extract generated image URLs from messages
+            const imageUrls = currentConversation.messages
+                .filter(msg => msg.imageUrl)
+                .map(msg => msg.imageUrl!);
+            setGeneratedImageUrls(imageUrls);
+            
+            console.log('📂 Loaded conversation:', currentConversation.title);
+        }
+    }, [currentConversation]);
+
+    // Auto-save conversations when messages change
+    useEffect(() => {
+        if (messages.length > 0) {
+            enableAutoSave(messages, characterDescription);
+        }
+
+        return () => {
+            disableAutoSave();
+        };
+    }, [messages, characterDescription, enableAutoSave, disableAutoSave]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -242,16 +286,57 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
         handleSendMessage(text);
     };
 
+    // Conversation history handlers
+    const handleShowHistory = () => {
+        setShowHistory(true);
+    };
+
+    const handleSelectConversation = (conversationId: string) => {
+        const conversation = loadConversation(conversationId);
+        if (conversation) {
+            setShowHistory(false);
+        }
+    };
+
+    const handleNewConversation = () => {
+        // Save current conversation if it has messages
+        if (messages.length > 0) {
+            enableAutoSave(messages, characterDescription);
+        }
+        
+        // Start fresh
+        startNewConversation();
+        setMessages([]);
+        setCharacterDescription(null);
+        setGeneratedImageUrls([]);
+        setUploadedFiles([]);
+        setUserInput('');
+        setError(null);
+        
+        console.log('🆕 Started new conversation');
+    };
+
+    const handleExportImportComplete = (imported: number) => {
+        setShowExportImport(false);
+        if (imported > 0) {
+            // Optionally refresh the conversation list or show success message
+            console.log(`📥 Imported ${imported} conversations`);
+        }
+    };
+
     return (
         <div className="flex flex-col h-full bg-[#F8FBFF]">
             <Header 
                 imageCount={generatedImageUrls.length} 
                 onDownloadAll={handleDownloadAll}
                 onEndSession={onEndSession}
+                onShowHistory={handleShowHistory}
+                conversationCount={conversationCount}
+                currentConversationTitle={currentConversation?.title}
             />
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
                 {messages.length === 0 ? (
-                    <Welcome />
+                    <Welcome onShowHistory={handleShowHistory} />
                 ) : (
                     messages.map((msg) => (
                         <Message key={msg.id} message={msg} onImageClick={setModalImageUrl} onSuggestionClick={handleSendMessage} />
@@ -294,10 +379,32 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
                         <button onClick={() => handleQuickAction('Explain my diagnosis')} className="bg-gradient-to-r from-[#E8F4F8] to-[#D1E9F0] border border-[#B8DCE6] text-xs text-[#2E7D95] px-3 py-1 rounded-full hover:from-[#2E7D95] hover:to-[#4A90A4] hover:text-white transition-all">Explain my diagnosis</button>
                         <button onClick={() => handleQuickAction('Understand my treatment')} className="bg-gradient-to-r from-[#E8F4F8] to-[#D1E9F0] border border-[#B8DCE6] text-xs text-[#2E7D95] px-3 py-1 rounded-full hover:from-[#2E7D95] hover:to-[#4A90A4] hover:text-white transition-all">Understand my treatment</button>
                         <button onClick={() => handleQuickAction('Medication side effects')} className="bg-gradient-to-r from-[#E8F4F8] to-[#D1E9F0] border border-[#B8DCE6] text-xs text-[#2E7D95] px-3 py-1 rounded-full hover:from-[#2E7D95] hover:to-[#4A90A4] hover:text-white transition-all">Medication side effects</button>
+                        
+                        {hasHistory && (
+                          <button onClick={() => setShowExportImport(true)} className="bg-gradient-to-r from-[#E8F4F8] to-[#D1E9F0] border border-[#B8DCE6] text-xs text-[#2E7D95] px-3 py-1 rounded-full hover:from-[#2E7D95] hover:to-[#4A90A4] hover:text-white transition-all">
+                            <i className="fas fa-download mr-1"></i>Backup
+                          </button>
+                        )}
                     </div>
                  </div>
             </div>
+            
+            {/* Modals */}
             {modalImageUrl && <ImageModal imageUrl={modalImageUrl} onClose={() => setModalImageUrl(null)} />}
+            
+            <ConversationHistory
+                isOpen={showHistory}
+                onClose={() => setShowHistory(false)}
+                onSelectConversation={handleSelectConversation}
+                onNewConversation={handleNewConversation}
+                currentConversationId={currentConversationId}
+            />
+            
+            <ConversationExportImport
+                isOpen={showExportImport}
+                onClose={() => setShowExportImport(false)}
+                onImportComplete={handleExportImportComplete}
+            />
         </div>
     );
 };
