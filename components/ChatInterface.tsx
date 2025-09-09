@@ -481,7 +481,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
     }, [messages, voiceSettings.autoRead, speak]);
 
     return (
-        <div className="flex flex-col h-full bg-[#F8FBFF]">
+        <div className="flex flex-col h-full theme-surface">
             <Header 
                 imageCount={generatedImageUrls.length} 
                 onDownloadAll={handleDownloadAll}
@@ -507,7 +507,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
                 <div ref={messagesEndRef} />
             </div>
 
-            <div className="bg-white p-4 sm:p-5 lg:p-6 border-t-2 border-[#E1F0F5]">
+            <div className="theme-surface p-4 sm:p-5 lg:p-6 border-t-2 theme-border">
                 {/* Medical Specialty Indicator */}
                 <div className="mb-3 flex items-center justify-between">
                     <SpecialtyIndicator
@@ -521,7 +521,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
                     </div>
                 </div>
                 
-                 <div className="flex items-center gap-3 bg-[#F8FBFF] border-2 border-[#E1F0F5] rounded-full p-2 focus-within:border-[#2E7D95] focus-within:ring-2 focus-[#2E7D95]/50 transition-all duration-300">
+                 <div className="flex items-center gap-3 theme-surface border-2 theme-border rounded-full p-2 focus-within:border-[var(--color-primary)] focus-within:ring-2 focus-within:ring-[var(--color-primary)]/20 transition-all duration-300">
                     <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*,application/pdf" className="hidden" multiple />
                     <button 
                         onClick={onMobileUploadClick} 

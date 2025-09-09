@@ -5,10 +5,14 @@ import PWAInstallPrompt from './components/PWAInstallPrompt';
 import OfflineStatus from './components/OfflineStatus';
 import PWAUpdateNotification from './components/PWAUpdateNotification';
 import { usePWA } from './hooks/usePWA';
+import { useTheme } from './hooks/useTheme';
+import ThemeService from './services/themeService';
+import UserPreferencesService from './services/userPreferencesService';
 
 const App: React.FC = () => {
   const [apiKey, setApiKey] = useState<string | null>(null);
   const { isInstalled, hasUpdate, update, checkForUpdates } = usePWA();
+  const { theme, isDarkMode } = useTheme();
 
   useEffect(() => {
     try {
@@ -19,6 +23,18 @@ const App: React.FC = () => {
     } catch (error) {
       console.error("Could not access local storage:", error);
     }
+
+    // Initialize theme service
+    const themeService = ThemeService.getInstance();
+    const preferencesService = UserPreferencesService.getInstance();
+    const userTheme = preferencesService.getTheme();
+    
+    // Apply user's theme preference
+    themeService.setTheme(userTheme);
+    
+    // Apply accessibility settings
+    themeService.setHighContrast(preferencesService.isHighContrast());
+    themeService.setReducedMotion(preferencesService.isReducedMotion());
   }, []);
 
   const handleApiKeySubmit = (key: string) => {
@@ -57,7 +73,9 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden text-[#1A2B42] font-['Inter'] relative">
+    <div className={`h-screen w-screen overflow-hidden font-['Inter'] relative transition-all duration-300 ${
+      isDarkMode ? 'dark-theme bg-slate-900 text-slate-100' : 'light-theme bg-gradient-to-br from-blue-50 to-cyan-50 text-slate-800'
+    }`}>
       {/* Main App Content */}
       {apiKey ? (
         <ChatView apiKey={apiKey} onEndSession={handleEndSession} />

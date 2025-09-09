@@ -30,6 +30,9 @@ class UserPreferencesService {
       voicePitch: 1.0,
       autoReadResponses: false,
       wakeWordEnabled: false,
+      theme: 'auto',
+      highContrast: false,
+      reducedMotion: false,
     };
   }
 
@@ -193,6 +196,31 @@ class UserPreferencesService {
     }
   }
 
+  // Theme helpers
+  public getTheme(): 'light' | 'dark' | 'auto' {
+    return this.preferences.theme;
+  }
+
+  public setTheme(theme: 'light' | 'dark' | 'auto'): void {
+    this.updatePreferences({ theme });
+  }
+
+  public isHighContrast(): boolean {
+    return this.preferences.highContrast;
+  }
+
+  public setHighContrast(enabled: boolean): void {
+    this.updatePreferences({ highContrast: enabled });
+  }
+
+  public isReducedMotion(): boolean {
+    return this.preferences.reducedMotion;
+  }
+
+  public setReducedMotion(enabled: boolean): void {
+    this.updatePreferences({ reducedMotion: enabled });
+  }
+
   // Accessibility helpers
   public getAccessibilitySettings() {
     return {
@@ -201,6 +229,9 @@ class UserPreferencesService {
       wakeWordEnabled: this.preferences.wakeWordEnabled,
       visualPreference: this.preferences.visualPreference,
       language: this.preferences.language,
+      theme: this.preferences.theme,
+      highContrast: this.preferences.highContrast,
+      reducedMotion: this.preferences.reducedMotion,
     };
   }
 
@@ -209,12 +240,18 @@ class UserPreferencesService {
     autoReadResponses?: boolean;
     wakeWordEnabled?: boolean;
     visualPreference?: boolean;
+    theme?: 'light' | 'dark' | 'auto';
+    highContrast?: boolean;
+    reducedMotion?: boolean;
   }): void {
     this.updatePreferences({
       voiceEnabled: settings.voiceEnabled ?? this.preferences.voiceEnabled,
       autoReadResponses: settings.autoReadResponses ?? this.preferences.autoReadResponses,
       wakeWordEnabled: settings.wakeWordEnabled ?? this.preferences.wakeWordEnabled,
       visualPreference: settings.visualPreference ?? this.preferences.visualPreference,
+      theme: settings.theme ?? this.preferences.theme,
+      highContrast: settings.highContrast ?? this.preferences.highContrast,
+      reducedMotion: settings.reducedMotion ?? this.preferences.reducedMotion,
     });
   }
 

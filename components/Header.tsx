@@ -1,4 +1,5 @@
 import React from 'react';
+import ThemeToggle from './ThemeToggle';
 
 interface HeaderProps {
     imageCount: number;
@@ -20,7 +21,7 @@ const Header: React.FC<HeaderProps> = ({
   currentConversationTitle
 }) => {
   return (
-    <header className="bg-gradient-to-r from-[#2E7D95] to-[#4A90A4] text-white p-5 flex items-center justify-between gap-4 shadow-lg z-10">
+    <header className="theme-gradient-primary text-white p-5 flex items-center justify-between gap-4 shadow-lg z-10 medical-header">
         <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center text-[#2E7D95]">
                 <i className="fas fa-stethoscope text-2xl"></i>
@@ -49,6 +50,8 @@ const Header: React.FC<HeaderProps> = ({
                   )}
               </button>
             )}
+            
+            <ThemeToggle size="md" className="text-white" />
             
             {onShowSettings && (
               <button

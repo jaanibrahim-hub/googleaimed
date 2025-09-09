@@ -65,6 +65,9 @@ export interface UserPreferences {
   voicePitch: number;
   autoReadResponses: boolean;
   wakeWordEnabled: boolean;
+  theme: 'light' | 'dark' | 'auto';
+  highContrast: boolean;
+  reducedMotion: boolean;
 }
 
 export interface OnboardingStep {
@@ -107,4 +110,27 @@ export interface SpeechRecognitionResult {
   transcript: string;
   confidence: number;
   isFinal: boolean;
+}
+
+export interface ThemeColors {
+  primary: string;
+  secondary: string;
+  accent: string;
+  background: string;
+  surface: string;
+  text: string;
+  textSecondary: string;
+  border: string;
+  success: string;
+  warning: string;
+  error: string;
+  info: string;
+}
+
+export interface ThemeConfig {
+  name: string;
+  colors: {
+    light: ThemeColors;
+    dark: ThemeColors;
+  };
 }

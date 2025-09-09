@@ -1,0 +1,362 @@
+/* Theme CSS Variables and Dark Mode Styles */
+
+:root {
+  /* Default Light Theme Colors */
+  --color-primary: #2E7D95;
+  --color-secondary: #4A90A4;
+  --color-accent: #7FB069;
+  --color-background: #F8FBFF;
+  --color-surface: #FFFFFF;
+  --color-text: #1F2937;
+  --color-text-secondary: #6B7280;
+  --color-border: #E1F0F5;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  --color-info: #3B82F6;
+  
+  /* Specialty colors (dynamic) */
+  --color-specialty-accent: var(--color-primary);
+  --color-specialty-light: var(--color-primary)20;
+  --color-specialty-border: var(--color-primary)40;
+  
+  /* Animation and transition variables */
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 300ms ease-in-out;
+  --transition-slow: 500ms ease-in-out;
+  
+  /* Shadow variables */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+  
+  /* Border radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+}
+
+/* Dark Theme Overrides */
+.dark-theme {
+  --color-primary: #4A90A4;
+  --color-secondary: #2E7D95;
+  --color-accent: #9ACA3C;
+  --color-background: #0F172A;
+  --color-surface: #1E293B;
+  --color-text: #F8FAFC;
+  --color-text-secondary: #CBD5E1;
+  --color-border: #334155;
+  --color-success: #22C55E;
+  --color-warning: #EAB308;
+  --color-error: #F87171;
+  --color-info: #60A5FA;
+  
+  /* Dark theme shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.5);
+}
+
+/* High Contrast Mode */
+.high-contrast {
+  --color-text: #000000;
+  --color-background: #FFFFFF;
+  --color-border: #000000;
+}
+
+.dark-theme.high-contrast {
+  --color-text: #FFFFFF;
+  --color-background: #000000;
+  --color-border: #FFFFFF;
+}
+
+/* Reduced Motion */
+.reduced-motion * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  transition-delay: 0s !important;
+}
+
+/* Global Theme Styles */
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+/* Theme-aware component styles */
+.theme-surface {
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+  transition: background-color var(--transition-normal), border-color var(--transition-normal);
+}
+
+.theme-text {
+  color: var(--color-text);
+  transition: color var(--transition-normal);
+}
+
+.theme-text-secondary {
+  color: var(--color-text-secondary);
+  transition: color var(--transition-normal);
+}
+
+.theme-border {
+  border-color: var(--color-border);
+  transition: border-color var(--transition-normal);
+}
+
+/* Theme-aware buttons */
+.theme-button-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: white;
+  border: none;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.theme-button-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+}
+
+.theme-button-secondary {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  transition: all var(--transition-fast);
+}
+
+.theme-button-secondary:hover {
+  background-color: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+/* Theme-aware cards */
+.theme-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal);
+}
+
+.theme-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+/* Theme-aware inputs */
+.theme-input {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.theme-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary)20;
+  outline: none;
+}
+
+.theme-input::placeholder {
+  color: var(--color-text-secondary);
+}
+
+/* Theme-aware modals */
+.theme-modal {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--color-border);
+}
+
+.theme-modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.dark-theme .theme-modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Theme-aware loading spinners */
+.theme-spinner {
+  border-color: var(--color-border);
+  border-top-color: var(--color-primary);
+}
+
+/* Theme-aware gradients */
+.theme-gradient-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+}
+
+.theme-gradient-secondary {
+  background: linear-gradient(135deg, var(--color-secondary), var(--color-accent));
+}
+
+.theme-gradient-accent {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
+}
+
+/* Medical specialty theming */
+.specialty-themed {
+  border-color: var(--color-specialty-border);
+  background-color: var(--color-specialty-light);
+}
+
+.specialty-themed:hover {
+  background-color: var(--color-specialty-accent);
+  color: white;
+}
+
+/* Dark mode specific enhancements */
+.dark-theme .glass-effect {
+  background-color: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.light-theme .glass-effect {
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Theme-aware scrollbars */
+.theme-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-text-secondary) var(--color-surface);
+}
+
+.theme-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.theme-scrollbar::-webkit-scrollbar-track {
+  background: var(--color-surface);
+  border-radius: var(--radius-full);
+}
+
+.theme-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--color-text-secondary);
+  border-radius: var(--radius-full);
+}
+
+.theme-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-primary);
+}
+
+/* Theme transition animations */
+@keyframes theme-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.theme-fade-in {
+  animation: theme-fade-in var(--transition-normal) ease-out;
+}
+
+/* Medical UI specific dark theme styles */
+.dark-theme .medical-header {
+  background: linear-gradient(135deg, #1E293B, #334155);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .medical-card {
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid #334155;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .medical-accent {
+  color: var(--color-accent);
+  text-shadow: 0 0 10px var(--color-accent)40;
+}
+
+/* Theme toggle button styles */
+.theme-toggle {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  overflow: hidden;
+}
+
+.theme-toggle:hover {
+  background: var(--color-primary);
+  color: white;
+  transform: scale(1.05);
+}
+
+.theme-toggle::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, var(--color-primary)40, transparent);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: all var(--transition-normal);
+  z-index: -1;
+}
+
+.theme-toggle:active::before {
+  width: 100px;
+  height: 100px;
+}
+
+/* Accessibility enhancements */
+@media (prefers-reduced-motion: reduce) {
+  .reduced-motion * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+}
+
+/* Print mode (always light) */
+@media print {
+  * {
+    background: white !important;
+    color: black !important;
+    border-color: black !important;
+  }
+}
+
+/* Focus styles for keyboard navigation */
+.theme-focus:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Selection styling */
+::selection {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.dark-theme ::selection {
+  background-color: var(--color-accent);
+  color: black;
+}
