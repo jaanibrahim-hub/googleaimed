@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Message as MessageType, Sender } from '../types';
+import { Message as MessageType, Sender, DocumentUpload } from '../types';
 import Message from './Message';
 import ImageModal from './ImageModal';
 import Welcome from './Welcome';
@@ -11,6 +11,8 @@ import SpecialtyIndicator from './SpecialtyIndicator';
 import VoiceControl from './VoiceControl';
 import VoiceSettings from './VoiceSettings';
 import UserSettings from './UserSettings';
+import EnhancedDocumentUpload from './EnhancedDocumentUpload';
+import OCRResultsViewer from './OCRResultsViewer';
 import { generateMedicalExplanation, initializeAi } from '../services/geminiService';
 import MedicalLoadingSpinner from './MedicalLoadingSpinner';
 import { useConversationHistory } from '../hooks/useConversationHistory';
@@ -103,6 +105,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
     const [showSpecialtySelector, setShowSpecialtySelector] = useState(false);
     const [showVoiceSettings, setShowVoiceSettings] = useState(false);
     const [showUserSettings, setShowUserSettings] = useState(false);
+    const [showDocumentUpload, setShowDocumentUpload] = useState(false);
+    const [documents, setDocuments] = useState<DocumentUpload[]>([]);
+    const [selectedDocument, setSelectedDocument] = useState<DocumentUpload | null>(null);
 
     // Conversation history management
     const {
@@ -480,6 +485,53 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
         }
     }, [messages, voiceSettings.autoRead, speak]);
 
+    // Enhanced document upload handlers
+    const handleDocumentsUploaded = useCallback((newDocuments: DocumentUpload[]) => {
+        setDocuments(newDocuments);
+        
+        // Convert documents to the legacy format for compatibility
+        const legacyFiles = newDocuments.map(doc => ({
+            file: doc.file,
+            base64: '', // Will be filled when processing
+            mimeType: doc.type
+        }));
+        
+        // Process files for base64 conversion
+        legacyFiles.forEach(legacyFile => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const base64 = (e.target?.result as string).split(',')[1];
+                legacyFile.base64 = base64;
+            };
+            reader.readAsDataURL(legacyFile.file);
+        });
+        
+        setUploadedFiles(legacyFiles);
+    }, []);
+
+    const handleOCRComplete = useCallback((document: DocumentUpload) => {
+        console.log('OCR completed for:', document.name);
+        
+        // Add OCR results to user input if there's extracted text
+        if (document.ocrResult?.text) {
+            const ocrText = document.ocrResult.text.trim();
+            if (ocrText) {
+                setUserInput(prev => {
+                    const newText = prev ? `${prev}\n\nExtracted from ${document.name}:\n${ocrText}` : `Extracted from ${document.name}:\n${ocrText}`;
+                    return newText;
+                });
+            }
+        }
+    }, []);
+
+    const handleShowDocumentUpload = () => {
+        setShowDocumentUpload(true);
+    };
+
+    const handleViewOCRResults = (document: DocumentUpload) => {
+        setSelectedDocument(document);
+    };
+
     return (
         <div className="flex flex-col h-full theme-surface">
             <Header 
@@ -524,11 +576,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
                  <div className="flex items-center gap-3 theme-surface border-2 theme-border rounded-full p-2 focus-within:border-[var(--color-primary)] focus-within:ring-2 focus-within:ring-[var(--color-primary)]/20 transition-all duration-300">
                     <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*,application/pdf" className="hidden" multiple />
                     <button 
-                        onClick={onMobileUploadClick} 
-                        className="p-2 text-gray-500 hover:text-[#2E7D95] rounded-full transition-colors"
+                        onClick={handleShowDocumentUpload} 
+                        className="p-2 text-gray-500 hover:text-[var(--color-primary)] rounded-full transition-colors"
                         data-onboarding-id="file-upload-button"
+                        title="Upload medical documents with OCR"
                     >
-                        <i className="fas fa-paperclip text-lg"></i>
+                        <i className="fas fa-file-medical text-lg"></i>
                     </button>
                     <input
                         type="text"
@@ -589,6 +642,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
                             <i className="fas fa-microphone-alt mr-1"></i>Voice
                           </button>
                         )}
+                        
+                        <button onClick={handleShowDocumentUpload} className="bg-gradient-to-r from-[#E8F4F8] to-[#D1E9F0] border border-[#B8DCE6] text-xs text-[#2E7D95] px-3 py-1 rounded-full hover:from-[#2E7D95] hover:to-[#4A90A4] hover:text-white transition-all">
+                          <i className="fas fa-file-medical mr-1"></i>Upload OCR
+                        </button>
                     </div>
                  </div>
             </div>
@@ -637,6 +694,83 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ apiKey, fileInputRef, onM
                 isOpen={showUserSettings}
                 onClose={() => setShowUserSettings(false)}
             />
+            
+            {/* Enhanced Document Upload Modal */}
+            {showDocumentUpload && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="theme-modal w-full max-w-4xl max-h-[90vh] overflow-hidden">
+                        <div className="flex items-center justify-between p-6 border-b theme-border">
+                            <h2 className="text-xl font-semibold theme-text">
+                                <i className="fas fa-file-medical-alt text-blue-500 mr-2"></i>
+                                Enhanced Medical Document Upload
+                            </h2>
+                            <button
+                                onClick={() => setShowDocumentUpload(false)}
+                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                <i className="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        
+                        <div className="p-6 overflow-y-auto max-h-96">
+                            <EnhancedDocumentUpload
+                                onFilesUploaded={handleDocumentsUploaded}
+                                onOCRComplete={handleOCRComplete}
+                                maxFiles={10}
+                            />
+                            
+                            {documents.length > 0 && (
+                                <div className="mt-6">
+                                    <h3 className="font-medium theme-text mb-3">Processed Documents</h3>
+                                    <div className="space-y-2">
+                                        {documents.map(doc => (
+                                            <div key={doc.id} className="flex items-center justify-between p-3 theme-surface rounded border theme-border">
+                                                <div className="flex items-center gap-3">
+                                                    <i className={`fas fa-file-medical ${doc.ocrResult ? 'text-green-500' : 'text-gray-500'}`}></i>
+                                                    <div>
+                                                        <div className="font-medium theme-text">{doc.name}</div>
+                                                        {doc.ocrResult && (
+                                                            <div className="text-xs text-green-600 dark:text-green-400">
+                                                                OCR: {doc.ocrResult.text.substring(0, 50)}...
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                {doc.ocrResult && (
+                                                    <button
+                                                        onClick={() => handleViewOCRResults(doc)}
+                                                        className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition-colors"
+                                                    >
+                                                        View OCR
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        
+                        <div className="flex justify-end p-6 border-t theme-border bg-gray-50 dark:bg-gray-800">
+                            <button
+                                onClick={() => setShowDocumentUpload(false)}
+                                className="px-6 py-2 theme-button-primary rounded-lg transition-colors"
+                            >
+                                Done
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
+            {/* OCR Results Viewer */}
+            {selectedDocument && (
+                <OCRResultsViewer
+                    document={selectedDocument}
+                    isOpen={!!selectedDocument}
+                    onClose={() => setSelectedDocument(null)}
+                />
+            )}
         </div>
     );
 };

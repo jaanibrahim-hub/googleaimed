@@ -134,3 +134,74 @@ export interface ThemeConfig {
     dark: ThemeColors;
   };
 }
+
+export interface OCRResult {
+  text: string;
+  confidence: number;
+  boundingBoxes?: OCRBoundingBox[];
+  language?: string;
+  pages?: OCRPage[];
+}
+
+export interface OCRBoundingBox {
+  text: string;
+  confidence: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface OCRPage {
+  pageNumber: number;
+  text: string;
+  confidence: number;
+  boundingBoxes: OCRBoundingBox[];
+}
+
+export interface DocumentUpload {
+  id: string;
+  file: File;
+  name: string;
+  type: string;
+  size: number;
+  uploadedAt: number;
+  ocrResult?: OCRResult;
+  isProcessing?: boolean;
+  preview?: string;
+  medicalType?: 'lab_report' | 'prescription' | 'medical_record' | 'xray' | 'scan' | 'other';
+  extractedData?: MedicalDocumentData;
+}
+
+export interface MedicalDocumentData {
+  patientInfo?: {
+    name?: string;
+    dateOfBirth?: string;
+    id?: string;
+  };
+  provider?: {
+    name?: string;
+    facility?: string;
+  };
+  date?: string;
+  type: string;
+  findings?: string[];
+  values?: LabValue[];
+  medications?: Medication[];
+  recommendations?: string[];
+}
+
+export interface LabValue {
+  name: string;
+  value: string;
+  unit?: string;
+  range?: string;
+  flag?: 'normal' | 'high' | 'low' | 'critical';
+}
+
+export interface Medication {
+  name: string;
+  dosage?: string;
+  frequency?: string;
+  instructions?: string;
+}
