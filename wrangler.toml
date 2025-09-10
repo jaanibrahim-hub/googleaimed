@@ -1,19 +1,13 @@
 name = "mediteach-ai"
-main = "dist/index.html"
+pages_build_output_dir = "dist"
 compatibility_date = "2024-09-09"
 
 [build]
 command = "npm run build"
 cwd = "."
 
+[build.upload]
+format = "directory"
+
 [build.environment_variables]
 NODE_VERSION = "20"
-
-[[pages.redirects]]
-from = "/*"
-to = "/index.html"
-status = 200
-
-[pages]
-# Cloudflare Pages configuration
-upload_dir = "dist"
